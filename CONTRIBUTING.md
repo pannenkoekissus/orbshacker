@@ -1,4 +1,4 @@
-# Contributing to Discord Orb Quest Faker
+# Contributing to Discord orbshacker
 
 Thank you for your interest in contributing to this project! This document provides guidelines and instructions for contributing.
 

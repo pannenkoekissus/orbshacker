@@ -16,6 +16,7 @@ import subprocess
 from typing import TypeVar, cast
 
 from . import _version as _build_version
+from .path_utils import sanitize_relative_path
 
 T = TypeVar("T")
 
@@ -166,7 +167,7 @@ def _resolve_version() -> str:
 
 # ── App identity ──────────────────────────────────────────────────────────────
 VERSION   = _resolve_version()
-DEVELOPER = "Strykey / Daniel Pires"
+DEVELOPER = "Strykey / Daniel Pires / Pannenkoekisus"
 
 # ── GitHub repo ───────────────────────────────────────────────────────────────
 GITHUB_REPO_OWNER = "DanielPires2000"
@@ -201,7 +202,7 @@ DISCORD_HEADERS = {
 # ── UI / UX (user-editable via settings.py or settings.json) ──────────────────
 SLEEP_SHORT        = 1.0
 SLEEP_LONG         = 2.0
-FAKE_EXE_DIR       = _get("FAKE_EXE_DIR",       "Win64")
+FAKE_EXE_DIR       = sanitize_relative_path(_get("FAKE_EXE_DIR", "Win64"))
 MAX_SEARCH_RESULTS = 20
 AUTO_DELETE        = _get("AUTO_DELETE",        False)
 TIMER_MINUTES      = _get("TIMER_MINUTES",      15)

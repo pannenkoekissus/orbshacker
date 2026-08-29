@@ -6,6 +6,7 @@ from typing import TypedDict
 import time
 
 from . import config
+from .path_utils import sanitize_relative_path
 from .faker import GameFaker
 from .ui import (
     Colors, print_color, print_boxed_title,
@@ -101,7 +102,7 @@ class DiscordGamesDB:
             name = exe.get('name', '')
             if name.startswith('>'):
                 name = name[1:]
-            name = name.replace('\\', '/')
+            name = sanitize_relative_path(name)
             if not name or name in seen:
                 continue
             if skip_patterns and any(p in name.lower() for p in self._SKIP_EXE_PATTERNS):
@@ -174,7 +175,7 @@ def _resolve_discord_exe(db: DiscordGamesDB, game: GameRecord) -> str | None:
             print_color("\n[!] Operation cancelled", Colors.YELLOW)
             time.sleep(config.SLEEP_SHORT)
             return None
-        return exe_name
+        return sanitize_relative_path(exe_name)
     return None
 
 

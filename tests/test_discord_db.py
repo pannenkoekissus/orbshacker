@@ -90,3 +90,16 @@ class TestFilterWin32Exes:
         all_exes = db.get_all_executables(SAMPLE_GAMES[0])
         assert "Minecraft.Windows.exe" in all_exes
         assert ">Minecraft.Windows.exe" not in all_exes
+
+    def test_sanitizes_symbols_and_illegal_chars(self):
+        games = [{
+            "id": "99",
+            "name": "Special Game™",
+            "executables": [
+                {"os": "win32", "name": "Game™:Special®/Bin/Launch*.exe"}
+            ]
+        }]
+        db = _make_db_with_games(games)
+        exes = db.get_all_executables(games[0])
+        assert exes == ["GameSpecial/Bin/Launch.exe"]
+

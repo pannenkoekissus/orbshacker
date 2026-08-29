@@ -13,6 +13,7 @@ import time
 from pathlib import Path
 
 from . import config
+from .path_utils import sanitize_relative_path, sanitize_filename
 from .ui import (
     Colors, print_color, print_boxed_title,
     loading_animation, ask_confirm,
@@ -193,9 +194,9 @@ class GameFaker:
 
     def create_fake_game(self, exe_name: str) -> Path | None:
         """Create fake game executable under Desktop/<FAKE_EXE_DIR>/."""
+        exe_name = sanitize_relative_path(exe_name)
         if not exe_name.lower().endswith('.exe'):
             exe_name += '.exe'
-        exe_name = exe_name.replace('\\', '/')
         target_path = self.chosen_path / config.FAKE_EXE_DIR / exe_name
         try:
             loading_animation(f"Creating {exe_name.split('/')[-1]}", 0.8)
