@@ -24,7 +24,7 @@ def main() -> None:
         pass
 
     print_banner()
-    print_color("Initializing Discord Orb Quest Faker...", Colors.CYAN)
+    print_color("Initializing orbshacker...", Colors.CYAN)
     print_color("[*] Connecting to Discord API...", Colors.GRAY)
 
     try:
@@ -62,7 +62,7 @@ def main() -> None:
                 elif choice == '4':
                     show_credits()
                 elif choice == '5':
-                    print_color(f"\n[*] Thanks for using Orb Quest Faker!", Colors.CYAN, bold=True)
+                    print_color(f"\n[*] Thanks for using orbshacker!", Colors.CYAN, bold=True)
                     print_color(f"[*] Developed by {config.DEVELOPER}", Colors.GRAY)
                     print_color("\n[*] May your orbs be plentiful!", Colors.MAGENTA)
                     break
@@ -72,7 +72,7 @@ def main() -> None:
 
             except KeyboardInterrupt:
                 print_color("\n\n[!] Interrupted by user", Colors.YELLOW)
-                print_color("[*] Thanks for using Orb Quest Faker!\n", Colors.CYAN)
+                print_color("[*] Thanks for using orbshacker!\n", Colors.CYAN)
                 break
     finally:
         faker.cleanup()

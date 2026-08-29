@@ -59,3 +59,15 @@ class TestPickWindowsExe:
             },
         }
         assert _pick_windows_exe(launch) == "game.exe"
+
+    def test_handles_special_symbols_in_launch(self):
+        launch = {
+            "0": {
+                "executable": "Bin\\Win64™\\Game®:Quest.exe",
+                "config": {"oslist": "windows"},
+            },
+        }
+        from orbshacker.path_utils import sanitize_relative_path
+        raw_exe = _pick_windows_exe(launch)
+        assert sanitize_relative_path(raw_exe) == "Bin/Win64/GameQuest.exe"
+

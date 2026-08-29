@@ -139,4 +139,4 @@ Win64/
 *.exe
 !exe.exe
 .backups/
-
+settings.py

@@ -9,6 +9,7 @@ from typing import Any, TypedDict, cast
 from pathlib import Path
 
 from . import config
+from .path_utils import sanitize_filename, sanitize_path_segment, sanitize_relative_path
 from .faker import GameFaker
 from .ui import (
     Colors, print_color, print_boxed_title,
@@ -101,13 +102,16 @@ def fetch_steam_app_info(appid: int) -> SteamAppInfo | None:
         common_cfg = cast(dict[str, str], app_data.get("common", {}))
         app_cfg = cast(dict[str, Any], app_data.get("config", {}))
 
-        name = common_cfg.get("name", f"App {appid}")
-        installdir = str(app_cfg.get("installdir", name))
+        raw_name = common_cfg.get("name", f"App {appid}")
+        name = sanitize_filename(raw_name)
+        raw_installdir = str(app_cfg.get("installdir", raw_name))
+        installdir = sanitize_path_segment(raw_installdir) or name
         launch_map = cast(SteamLaunchMap, app_cfg.get("launch", {}))
         executable = _pick_windows_exe(launch_map)
 
         if not executable:
             executable = installdir.split("/")[-1] + ".exe"
+        executable = sanitize_relative_path(executable)
 
         depots = cast(dict[str, Any], app_data.get("depots", {}))
         depot_id = next((key for key in depots.keys() if key.isdigit()), None)
@@ -257,10 +261,13 @@ def _prompt_app_info_manually(appid: int) -> SteamAppInfo:
     """Fallback: ask user to type Steam app info."""
     print_color("[!] Could not fetch app info automatically.", Colors.YELLOW)
     print_color("[*] Enter details manually:", Colors.CYAN)
+    name_raw = input(f"  {Colors.BOLD}Game name{Colors.RESET}: ").strip() or f"App {appid}"
+    install_raw = input(f"  {Colors.BOLD}Install dir{Colors.RESET} (folder in steamapps/common): ").strip() or f"App{appid}"
+    exe_raw = input(f"  {Colors.BOLD}Executable{Colors.RESET} (e.g. Bin/Game.exe): ").strip() or "Game.exe"
     return {
-        "name":       input(f"  {Colors.BOLD}Game name{Colors.RESET}: ").strip() or f"App {appid}",
-        "installdir": input(f"  {Colors.BOLD}Install dir{Colors.RESET} (folder in steamapps/common): ").strip() or f"App{appid}",
-        "executable": input(f"  {Colors.BOLD}Executable{Colors.RESET} (e.g. Bin/Game.exe): ").strip() or "Game.exe",
+        "name":       sanitize_filename(name_raw),
+        "installdir": sanitize_path_segment(install_raw),
+        "executable": sanitize_relative_path(exe_raw),
         "depot_id":   None,
     }
 
@@ -297,7 +304,8 @@ def steam_quest_mode(faker: GameFaker) -> None:
 
     override = input(f"\n{Colors.BOLD}Override executable path?{Colors.RESET} [leave empty to keep]: ").strip()
     if override:
-        info['executable'] = override.replace("\\", "/")
+        info['executable'] = sanitize_relative_path(override)
+    info['installdir'] = sanitize_path_segment(info['installdir'])
 
     exe_full_path = f"{info['installdir']}/{info['executable']}"
     fake_exe_path = steam_path / "steamapps" / "common" / exe_full_path.replace("/", os.sep)
