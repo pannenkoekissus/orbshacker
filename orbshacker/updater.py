@@ -44,7 +44,7 @@ def _schedule_delete(path: Path) -> None:
         return
 
     try:
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".cmd", mode="w", encoding="utf-8") as script_file:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".cmd", mode="w", encoding="utf-8", dir=".") as script_file:
             script_path = Path(script_file.name)
             script_file.write(
                 "@echo off\r\n"

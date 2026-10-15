@@ -170,7 +170,7 @@ VERSION   = _resolve_version()
 DEVELOPER = "Strykey / Daniel Pires / Pannenkoekisus"
 
 # ── GitHub repo ───────────────────────────────────────────────────────────────
-GITHUB_REPO_OWNER = "DanielPires2000"
+GITHUB_REPO_OWNER = "pannenkoekissus"
 GITHUB_REPO_NAME  = "orbshacker"
 REPO_URL          = f"https://github.com/{GITHUB_REPO_OWNER}/{GITHUB_REPO_NAME}"
 
