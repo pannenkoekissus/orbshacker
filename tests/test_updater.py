@@ -34,10 +34,7 @@ class TestSha256:
 
 class TestParseSha256sums:
     def test_parses_standard_lines(self):
-        text = (
-            "a" * 64 + "  orbshacker.exe\n"
-            + "b" * 64 + " *other.bin\n"
-        )
+        text = "a" * 64 + "  orbshacker.exe\n" + "b" * 64 + " *other.bin\n"
         sums = parse_sha256sums(text)
         assert sums["orbshacker.exe"] == "a" * 64
         assert sums["other.bin"] == "b" * 64

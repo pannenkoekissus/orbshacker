@@ -27,6 +27,7 @@ if sys.stdin is None:
 def is_faked_game() -> bool:
     """A process is a faked game only if it carries an orbshacker baked config."""
     from orbshacker.bake import is_faked_game as _is_faked
+
     return _is_faked()
 
 
@@ -35,6 +36,7 @@ def show_console() -> None:
     if sys.platform == "win32" and getattr(sys, "frozen", False):
         try:
             import ctypes
+
             if not ctypes.windll.kernel32.GetConsoleWindow():
                 # Try to attach to parent console first
                 attached = ctypes.windll.kernel32.AttachConsole(-1)
@@ -52,6 +54,7 @@ def show_console() -> None:
 if __name__ == "__main__":
     if is_faked_game() or "--timer-mode" in sys.argv:
         from orbshacker.timer import parse_timer_args, run_timer
+
         run_timer(parse_timer_args(sys.argv))
     else:
         show_console()
@@ -66,6 +69,7 @@ if __name__ == "__main__":
         except Exception as e:
             print_color(f"\n[ERROR] Fatal error: {e}", Colors.RED, bold=True)
             import traceback
+
             traceback.print_exc()
             input("\nPress Enter to exit...")
             sys.exit(1)

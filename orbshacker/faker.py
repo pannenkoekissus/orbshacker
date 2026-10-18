@@ -51,7 +51,7 @@ def build_timer_script(config_dict: dict) -> str:
 
 
 def _is_frozen() -> bool:
-    return getattr(sys, 'frozen', False)
+    return getattr(sys, "frozen", False)
 
 
 def _find_source_exe() -> Path:
@@ -130,8 +130,9 @@ class GameFaker:
                 return Path(prefix.replace("/", os.sep))
         return self.chosen_path
 
-    def build_baked_config(self, target_exe=None, manifest_path=None, cleanup_dirs=(),
-                           extra_files=(), shared_files=()) -> dict:
+    def build_baked_config(
+        self, target_exe=None, manifest_path=None, cleanup_dirs=(), extra_files=(), shared_files=()
+    ) -> dict:
         return {
             "TARGET_EXE": str(target_exe).replace("\\", "/") if target_exe else None,
             "TIMER_MINUTES": config.TIMER_MINUTES,
@@ -233,8 +234,8 @@ class GameFaker:
     def create_fake_game(self, exe_name: str) -> Path | None:
         """Create fake game executable under Desktop/<FAKE_EXE_DIR>/."""
         exe_name = sanitize_relative_path(exe_name)
-        if not exe_name.lower().endswith('.exe'):
-            exe_name += '.exe'
+        if not exe_name.lower().endswith(".exe"):
+            exe_name += ".exe"
         target_path = self.chosen_path / config.FAKE_EXE_DIR / exe_name
         try:
             loading_animation(f"Creating {exe_name.split('/')[-1]}", 0.5)
@@ -268,7 +269,7 @@ class GameFaker:
                 env["PATH"] = os.pathsep.join(part for part in path_parts if part)
 
             debug(f"args: {args}")
-            if sys.platform == 'win32':
+            if sys.platform == "win32":
                 DETACHED_PROCESS = 0x00000008
                 proc = subprocess.Popen(
                     args,
@@ -305,7 +306,9 @@ class GameFaker:
         if not config.AUTO_DELETE_ON_EXIT:
             return
 
-        print_color("\n[*] AUTO_DELETE_ON_EXIT enabled. Cleaning up faked processes and files...", Colors.CYAN)
+        print_color(
+            "\n[*] AUTO_DELETE_ON_EXIT enabled. Cleaning up faked processes and files...", Colors.CYAN
+        )
 
         for proc in self._processes:
             try:
@@ -357,7 +360,7 @@ def manual_mode(faker: GameFaker) -> None:
     print()
 
     exe_name = input(f"{Colors.BOLD}Executable name{Colors.RESET} (or 'back'): ").strip()
-    if not exe_name or exe_name.lower() in ('back', 'b'):
+    if not exe_name or exe_name.lower() in ("back", "b"):
         return
 
     print(f"\n{Colors.BOLD}Summary:{Colors.RESET}")

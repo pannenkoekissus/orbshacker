@@ -23,15 +23,17 @@ class TestParseTimerArgs:
 
 class TestResolveConfig:
     def test_baked_config_wins(self):
-        with patch("orbshacker.timer.ORBSHACKER_BAKED_CONFIG",
-                   {"TIMER_MINUTES": 45, "AUTO_DELETE_ON_TIMER_END": False}, create=True):
+        with patch(
+            "orbshacker.timer.ORBSHACKER_BAKED_CONFIG",
+            {"TIMER_MINUTES": 45, "AUTO_DELETE_ON_TIMER_END": False},
+            create=True,
+        ):
             cfg = resolve_config()
         assert cfg["TIMER_MINUTES"] == 45
         assert cfg["AUTO_DELETE_ON_TIMER_END"] is False
 
     def test_explicit_minutes_win_over_baked(self):
-        with patch("orbshacker.timer.ORBSHACKER_BAKED_CONFIG",
-                   {"TIMER_MINUTES": 45}, create=True):
+        with patch("orbshacker.timer.ORBSHACKER_BAKED_CONFIG", {"TIMER_MINUTES": 45}, create=True):
             cfg = resolve_config(7)
         assert cfg["TIMER_MINUTES"] == 7
 
@@ -48,8 +50,10 @@ class TestCleanupTargets:
         script = tmp_path / "orbshacker.py"
         script.write_text("print('tool')", encoding="utf-8")
 
-        with patch("orbshacker.timer.sys.executable", str(exe)), \
-             patch("orbshacker.timer.sys.argv", ["prog", str(script)]):
+        with (
+            patch("orbshacker.timer.sys.executable", str(exe)),
+            patch("orbshacker.timer.sys.argv", ["prog", str(script)]),
+        ):
             files, dirs = cleanup_targets({"CLEANUP_DIRS": [], "EXTRA_FILES": []})
 
         assert exe not in files
@@ -59,13 +63,14 @@ class TestCleanupTargets:
         exe = tmp_path / "TslGame.exe"
         exe.write_bytes(b"MZ identical pythonw copy")
 
-        with patch("orbshacker.timer.sys.executable", str(exe)), \
-             patch("orbshacker.timer.sys.argv", ["prog"]):
-            files, dirs = cleanup_targets({
-                "TARGET_EXE": str(exe),
-                "CLEANUP_DIRS": [],
-                "EXTRA_FILES": [],
-            })
+        with patch("orbshacker.timer.sys.executable", str(exe)), patch("orbshacker.timer.sys.argv", ["prog"]):
+            files, dirs = cleanup_targets(
+                {
+                    "TARGET_EXE": str(exe),
+                    "CLEANUP_DIRS": [],
+                    "EXTRA_FILES": [],
+                }
+            )
 
         assert exe in files
 
@@ -75,13 +80,17 @@ class TestCleanupTargets:
         running = tmp_path / "python.exe"
         running.write_bytes(b"MZ")
 
-        with patch("orbshacker.timer.sys.executable", str(running)), \
-             patch("orbshacker.timer.sys.argv", ["prog"]):
-            files, dirs = cleanup_targets({
-                "TARGET_EXE": str(other),
-                "CLEANUP_DIRS": [],
-                "EXTRA_FILES": [],
-            })
+        with (
+            patch("orbshacker.timer.sys.executable", str(running)),
+            patch("orbshacker.timer.sys.argv", ["prog"]),
+        ):
+            files, dirs = cleanup_targets(
+                {
+                    "TARGET_EXE": str(other),
+                    "CLEANUP_DIRS": [],
+                    "EXTRA_FILES": [],
+                }
+            )
 
         assert other not in files
 
@@ -93,13 +102,17 @@ class TestCleanupTargets:
         script.write_text("# fake", encoding="utf-8")
         bake_config(script, {"TIMER_MINUTES": 5})
 
-        with patch("orbshacker.timer.sys.executable", str(exe)), \
-             patch("orbshacker.timer.sys.argv", [str(script)]):
-            files, dirs = cleanup_targets({
-                "STEAM_MANIFEST_PATH": "C:/Steam/appmanifest_1.acf",
-                "CLEANUP_DIRS": ["C:/Games/G"],
-                "EXTRA_FILES": ["C:/Games/G/python312.dll"],
-            })
+        with (
+            patch("orbshacker.timer.sys.executable", str(exe)),
+            patch("orbshacker.timer.sys.argv", [str(script)]),
+        ):
+            files, dirs = cleanup_targets(
+                {
+                    "STEAM_MANIFEST_PATH": "C:/Steam/appmanifest_1.acf",
+                    "CLEANUP_DIRS": ["C:/Games/G"],
+                    "EXTRA_FILES": ["C:/Games/G/python312.dll"],
+                }
+            )
 
         names = [Path(f).name for f in files]
         assert "TslGame.exe" in names
@@ -118,14 +131,18 @@ class TestCleanupTargets:
         dll = tmp_path / "python312.dll"
         dll.write_bytes(b"MZ dll")
 
-        with patch("orbshacker.timer.sys.executable", str(own_exe)), \
-             patch("orbshacker.timer.sys.argv", ["prog"]):
-            files, dirs = cleanup_targets({
-                "TARGET_EXE": str(own_exe),
-                "SHARED_FILES": [str(dll)],
-                "CLEANUP_DIRS": [],
-                "EXTRA_FILES": [],
-            })
+        with (
+            patch("orbshacker.timer.sys.executable", str(own_exe)),
+            patch("orbshacker.timer.sys.argv", ["prog"]),
+        ):
+            files, dirs = cleanup_targets(
+                {
+                    "TARGET_EXE": str(own_exe),
+                    "SHARED_FILES": [str(dll)],
+                    "CLEANUP_DIRS": [],
+                    "EXTRA_FILES": [],
+                }
+            )
 
         assert own_exe in files
         assert dll not in files
@@ -137,14 +154,18 @@ class TestCleanupTargets:
         dll = tmp_path / "python312.dll"
         dll.write_bytes(b"MZ dll")
 
-        with patch("orbshacker.timer.sys.executable", str(own_exe)), \
-             patch("orbshacker.timer.sys.argv", ["prog"]):
-            files, dirs = cleanup_targets({
-                "TARGET_EXE": str(own_exe),
-                "SHARED_FILES": [str(dll)],
-                "CLEANUP_DIRS": [],
-                "EXTRA_FILES": [],
-            })
+        with (
+            patch("orbshacker.timer.sys.executable", str(own_exe)),
+            patch("orbshacker.timer.sys.argv", ["prog"]),
+        ):
+            files, dirs = cleanup_targets(
+                {
+                    "TARGET_EXE": str(own_exe),
+                    "SHARED_FILES": [str(dll)],
+                    "CLEANUP_DIRS": [],
+                    "EXTRA_FILES": [],
+                }
+            )
 
         assert dll in files
 

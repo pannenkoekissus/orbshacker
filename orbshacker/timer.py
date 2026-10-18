@@ -56,6 +56,7 @@ def resolve_config(minutes=None) -> dict:
     if __package__:
         try:
             from . import config
+
             cfg["TIMER_MINUTES"] = config.TIMER_MINUTES
             cfg["AUTO_CLOSE"] = config.AUTO_CLOSE
             cfg["AUTO_DELETE_ON_TIMER_END"] = config.AUTO_DELETE_ON_TIMER_END
@@ -143,9 +144,18 @@ def cleanup_targets(cfg: dict) -> tuple[list, list]:
     dirs = [Path(p) for p in cfg.get("CLEANUP_DIRS", []) if p]
     return files, dirs
 
+
 class TimerApp:
-    def __init__(self, root, minutes=DEFAULT_MINUTES, auto_close=True, auto_delete=True,
-                 cleanup_files=None, cleanup_dirs=None, title: str = WINDOW_TITLE):
+    def __init__(
+        self,
+        root,
+        minutes=DEFAULT_MINUTES,
+        auto_close=True,
+        auto_delete=True,
+        cleanup_files=None,
+        cleanup_dirs=None,
+        title: str = WINDOW_TITLE,
+    ):
         self.root = root
         self.auto_delete = bool(auto_delete)
         self.cleanup_files = list(cleanup_files or [])
@@ -405,23 +415,27 @@ def run_timer(minutes=None) -> None:
         auto_delete=cfg["AUTO_DELETE_ON_TIMER_END"],
         cleanup_files=files,
         cleanup_dirs=dirs,
-        title=title
+        title=title,
     )
     root.mainloop()
+
 
 def resource_path(name: str) -> Path:
     if getattr(sys, "frozen", False):
         return Path(sys._MEIPASS) / name
-    return Path(__file__).parent / name
+    return None
+
 
 def debug(text):
     import time
     from pathlib import Path
+
     try:
         with open(Path(__file__).resolve().parent / "debug.txt", "a", encoding="utf-8") as f:
             f.write(f"[{time.strftime('%H:%M:%S')}] {text}\n")
     except OSError:
         pass
+
 
 if __name__ == "__main__":
     run_timer()

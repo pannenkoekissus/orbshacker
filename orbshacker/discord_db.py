@@ -92,17 +92,17 @@ class DiscordGamesDB:
         exact: dict[str, GameRecord] = {}
         partial: dict[str, GameRecord] = {}
         for game in self.games:
-            game_id = game.get('id', '')
-            name = game.get('name', '').lower()
-            aliases = [a.lower() for a in game.get('aliases', [])]
+            game_id = game.get("id", "")
+            name = game.get("name", "").lower()
+            aliases = [a.lower() for a in game.get("aliases", [])]
             if query_lower == name or query_lower in aliases:
                 if game_id:
                     exact.setdefault(game_id, game)
             elif query_lower in name or any(query_lower in a for a in aliases):
                 if game_id:
                     partial.setdefault(game_id, game)
-        merged = list(exact.values()) + [g for g in partial.values() if g.get('id') not in exact]
-        return merged[:config.MAX_SEARCH_RESULTS]
+        merged = list(exact.values()) + [g for g in partial.values() if g.get("id") not in exact]
+        return merged[: config.MAX_SEARCH_RESULTS]
 
     # ── executable helpers ────────────────────────────────────────────────────
     # Anchored on suffix/prefix/compound so real game names like
@@ -121,11 +121,11 @@ class DiscordGamesDB:
     def _filter_win32_exes(self, game: GameRecord, skip_patterns: bool = True) -> list[str]:
         result: list[str] = []
         seen: set[str] = set()
-        for exe in game.get('executables', []):
-            if not isinstance(exe, dict) or exe.get('os') != 'win32':
+        for exe in game.get("executables", []):
+            if not isinstance(exe, dict) or exe.get("os") != "win32":
                 continue
-            name = exe.get('name', '')
-            if name.startswith('>'):
+            name = exe.get("name", "")
+            if name.startswith(">"):
                 name = name[1:]
             name = sanitize_relative_path(name)
             if not name or name in seen:
@@ -146,6 +146,7 @@ class DiscordGamesDB:
 
 # ── Interactive UI ────────────────────────────────────────────────────────────
 
+
 def _pick_discord_game(db: DiscordGamesDB, query: str) -> GameRecord | None:
     """Search the Discord DB and let the user choose a game."""
     loading_animation(f"Searching for '{query}'", 0.8)
@@ -159,12 +160,12 @@ def _pick_discord_game(db: DiscordGamesDB, query: str) -> GameRecord | None:
     print(f"\n{Colors.BOLD}{Colors.GREEN}Found {len(matches)} game(s):{Colors.RESET}\n")
     print(f"{Colors.GRAY}{'─' * 75}{Colors.RESET}")
     for idx, game in enumerate(matches, 1):
-        name    = game.get('name', 'Unknown')
-        game_id = game.get('id', 'N/A')
-        aliases = game.get('aliases', [])
+        name = game.get("name", "Unknown")
+        game_id = game.get("id", "N/A")
+        aliases = game.get("aliases", [])
         print(f"{Colors.BOLD}{Colors.CYAN}{idx:2d}.{Colors.RESET} {Colors.WHITE}{name}{Colors.RESET}")
         if aliases:
-            alias_str = ', '.join(aliases[:3])
+            alias_str = ", ".join(aliases[:3])
             if len(aliases) > 3:
                 alias_str += f" (+{len(aliases) - 3} more)"
             print(f"    {Colors.GRAY}Aliases: {alias_str}{Colors.RESET}")
@@ -174,7 +175,7 @@ def _pick_discord_game(db: DiscordGamesDB, query: str) -> GameRecord | None:
     print()
 
     raw = input(f"{Colors.BOLD}Select [1-{len(matches)}]{Colors.RESET} (or 'back'): ").strip()
-    if raw.lower() in ('back', 'b', ''):
+    if raw.lower() in ("back", "b", ""):
         return None
     try:
         idx = int(raw)
@@ -214,7 +215,7 @@ def database_mode(db: DiscordGamesDB, faker: GameFaker) -> None:
     print()
 
     query = input(f"{Colors.BOLD}Search{Colors.RESET} (or 'back'): ").strip()
-    if query.lower() in ('back', 'b', ''):
+    if query.lower() in ("back", "b", ""):
         return
 
     selected = _pick_discord_game(db, query)
@@ -246,10 +247,12 @@ def database_mode(db: DiscordGamesDB, faker: GameFaker) -> None:
     result = faker.create_fake_game(exe_name)
     if result:
         print()
-        faker.launch_executable(result, selected.get('name'))
+        faker.launch_executable(result, selected.get("name"))
         print_color("\n[OK] Setup complete! Discord should detect the game.", Colors.GREEN, bold=True)
         print_color("[!] IMPORTANT: Discord MUST be running for the spoofing to work", Colors.YELLOW)
         print_color("[*] Keep the process running until quest is complete", Colors.CYAN)
-        print_color("[*] TIP: Launch another game from the menu to emulate it simultaneously!", Colors.MAGENTA)
+        print_color(
+            "[*] TIP: Launch another game from the menu to emulate it simultaneously!", Colors.MAGENTA
+        )
 
     pause()

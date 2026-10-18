@@ -21,7 +21,7 @@ def main() -> None:
 
     try:
         subprocess.run(
-            'cls' if os.name == 'nt' else 'clear',
+            "cls" if os.name == "nt" else "clear",
             shell=True,
             check=False,
         )
@@ -53,7 +53,7 @@ def main() -> None:
         while True:
             try:
                 subprocess.run(
-                    'cls' if os.name == 'nt' else 'clear',
+                    "cls" if os.name == "nt" else "clear",
                     shell=True,
                     check=False,
                 )
@@ -65,15 +65,15 @@ def main() -> None:
                 print_menu()
                 choice = input(f"{Colors.BOLD}Select option{Colors.RESET} [1-5]: ").strip()
 
-                if choice == '1':
+                if choice == "1":
                     database_mode(db, faker)
-                elif choice == '2':
+                elif choice == "2":
                     manual_mode(faker)
-                elif choice == '3':
+                elif choice == "3":
                     steam_quest_mode(faker)
-                elif choice == '4':
+                elif choice == "4":
                     show_credits()
-                elif choice == '5':
+                elif choice == "5":
                     print_color("\n[*] Thanks for using orbshacker!", Colors.CYAN, bold=True)
                     print_color(f"[*] Developed by {config.DEVELOPER}", Colors.GRAY)
                     print_color("\n[*] May your orbs be plentiful!", Colors.MAGENTA)

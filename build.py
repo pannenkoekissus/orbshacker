@@ -30,7 +30,7 @@ def get_git_version() -> str:
             return tag.lstrip("v")
     except Exception:
         pass
-    return getattr(_build_version, "VERSION", "0.0.0") # Fallback to the version in _version.py if git fails
+    return getattr(_build_version, "VERSION", "0.0.0")  # Fallback to the version in _version.py if git fails
 
 
 def main():

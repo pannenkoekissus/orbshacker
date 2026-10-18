@@ -52,7 +52,13 @@ def spawn_self_destruct(files, dirs, max_attempts: int = MAX_DELETE_ATTEMPTS) ->
     script = build_self_destruct_script(files, dirs, max_attempts)
     try:
         with tempfile.NamedTemporaryFile(
-            delete=False, prefix="orbshacker_updater", dir=".", suffix=".cmd", mode="w", encoding="utf-8", newline=""
+            delete=False,
+            prefix="orbshacker_updater",
+            dir=".",
+            suffix=".cmd",
+            mode="w",
+            encoding="utf-8",
+            newline="",
         ) as fh:
             script_path = Path(fh.name)
             fh.write(script)

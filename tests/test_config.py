@@ -17,9 +17,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
 def _load_entrypoint_module():
-    spec = importlib.util.spec_from_file_location(
-        "orbshacker_script", PROJECT_ROOT / "orbshacker.py"
-    )
+    spec = importlib.util.spec_from_file_location("orbshacker_script", PROJECT_ROOT / "orbshacker.py")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -204,10 +202,11 @@ class TestFaker:
             assert dummy_file.exists()
 
     def test_faker_custom_timer_minutes(self, tmp_path):
-        with patch("orbshacker.config.TIMER_MINUTES", 25), \
-             patch("orbshacker.config.AUTO_DELETE_ON_TIMER_END", False), \
-             patch("orbshacker.config.AUTO_DELETE_ON_EXIT", False):
-
+        with (
+            patch("orbshacker.config.TIMER_MINUTES", 25),
+            patch("orbshacker.config.AUTO_DELETE_ON_TIMER_END", False),
+            patch("orbshacker.config.AUTO_DELETE_ON_EXIT", False),
+        ):
             faker = GameFaker()
             dummy_src = tmp_path / "pythonw.exe"
             dummy_src.touch()
@@ -235,8 +234,7 @@ class TestFaker:
                 assert called_args == [str(Path("C:/Dummy/Game.exe"))]
 
     def test_multi_game_scripts_are_independent(self, tmp_path):
-        with patch("orbshacker.config.TIMER_MINUTES", 11), \
-             patch("orbshacker.config.CHOSEN_FOLDER", tmp_path):
+        with patch("orbshacker.config.TIMER_MINUTES", 11), patch("orbshacker.config.CHOSEN_FOLDER", tmp_path):
             faker = GameFaker()
             dummy_src = tmp_path / "pythonw.exe"
             dummy_src.write_bytes(b"MZ pythonw source")
@@ -257,8 +255,7 @@ class TestFaker:
             assert first_script != second_script
 
     def test_source_mode_exe_stays_byte_identical(self, tmp_path):
-        with patch("orbshacker.config.TIMER_MINUTES", 15), \
-             patch("orbshacker.config.CHOSEN_FOLDER", tmp_path):
+        with patch("orbshacker.config.TIMER_MINUTES", 15), patch("orbshacker.config.CHOSEN_FOLDER", tmp_path):
             faker = GameFaker()
             dummy_src = tmp_path / "pythonw.exe"
             payload = b"MZ signed pythonw payload"
@@ -284,6 +281,7 @@ class TestFaker:
         faker.copy_exe_to(target)
 
         from orbshacker.bake import load_baked_config
+
         baked = load_baked_config(target)
         assert baked is not None
         assert baked["TIMER_MINUTES"] == config.TIMER_MINUTES
@@ -362,13 +360,15 @@ def test_timer_self_destruction(tmp_path):
 
     root = MagicMock()
     with patch.object(TimerApp, "_tick"):
-        app = TimerApp(root, minutes=15, auto_delete=True,
-                       cleanup_files=[tmp_path / "TslGame.exe"],
-                       cleanup_dirs=[tmp_path])
+        app = TimerApp(
+            root,
+            minutes=15,
+            auto_delete=True,
+            cleanup_files=[tmp_path / "TslGame.exe"],
+            cleanup_dirs=[tmp_path],
+        )
 
-    with patch("orbshacker.timer.spawn_self_destruct") as mock_spawn, \
-         patch("sys.exit") as mock_exit:
-
+    with patch("orbshacker.timer.spawn_self_destruct") as mock_spawn, patch("sys.exit") as mock_exit:
         app.trigger_self_destruction()
 
         mock_spawn.assert_called_once()

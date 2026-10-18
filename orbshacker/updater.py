@@ -52,12 +52,12 @@ def _schedule_delete(path: Path) -> None:
 
 def is_frozen() -> bool:
     """Return True if running as a compiled executable (e.g. PyInstaller)."""
-    return getattr(sys, 'frozen', False)
+    return getattr(sys, "frozen", False)
 
 
 def _parse_version(tag: str) -> Version:
     """Parse a version tag like 'v2.1.0' or '2.1.0' into a Version object."""
-    return Version(tag.lstrip('v'))
+    return Version(tag.lstrip("v"))
 
 
 def _get_latest_release() -> GitHubRelease | None:
@@ -74,8 +74,8 @@ def _get_latest_release() -> GitHubRelease | None:
 def _find_exe_asset(assets: list[ReleaseAsset]) -> ReleaseAsset | None:
     """Find the .exe download asset from a release."""
     for asset in assets:
-        name = asset.get('name', '')
-        if name.lower().endswith('.exe'):
+        name = asset.get("name", "")
+        if name.lower().endswith(".exe"):
             return asset
     return None
 
@@ -83,7 +83,7 @@ def _find_exe_asset(assets: list[ReleaseAsset]) -> ReleaseAsset | None:
 def _find_checksum_asset(assets: list[ReleaseAsset]) -> ReleaseAsset | None:
     """Find the SHA256SUMS asset from a release."""
     for asset in assets:
-        if asset.get('name', '').upper() == 'SHA256SUMS':
+        if asset.get("name", "").upper() == "SHA256SUMS":
             return asset
     return None
 
@@ -102,7 +102,7 @@ def _download_file(url: str, dest: Path) -> None:
     """Download a file from url to dest path."""
     resp = requests.get(url, stream=True, timeout=config.REQUEST_TIMEOUT_LONG)
     resp.raise_for_status()
-    with open(dest, 'wb') as f:
+    with open(dest, "wb") as f:
         for chunk in resp.iter_content(8192):
             if chunk:
                 f.write(chunk)
@@ -133,7 +133,7 @@ def _replace_exe(new_exe: Path) -> None:
     4. Exit current process
     """
     current_exe = Path(sys.executable)
-    old_exe = current_exe.with_suffix('.old')
+    old_exe = current_exe.with_suffix(".old")
 
     if old_exe.exists():
         try:
@@ -165,7 +165,7 @@ def auto_update() -> None:
     if not is_frozen():
         return
 
-    _cleanup_old_exe(Path(sys.executable).with_suffix('.old'))
+    _cleanup_old_exe(Path(sys.executable).with_suffix(".old"))
 
     try:
         ui.loading_animation("Checking for updates", 0.5)
@@ -176,7 +176,7 @@ def auto_update() -> None:
     if not release:
         return
 
-    tag = release.get('tag_name', '')
+    tag = release.get("tag_name", "")
     try:
         remote_version = _parse_version(tag)
         local_version = _parse_version(config.VERSION)
@@ -187,7 +187,7 @@ def auto_update() -> None:
         ui.print_color(f"[UPDATE] You're up to date (v{config.VERSION})", ui.Colors.CYAN)
         return
 
-    assets = release.get('assets', [])
+    assets = release.get("assets", [])
     asset = _find_exe_asset(assets)
     if not asset:
         ui.print_color(f"[UPDATE] v{tag} available but no .exe found in release", ui.Colors.YELLOW)
@@ -203,13 +203,13 @@ def auto_update() -> None:
     ui.print_color(f"[UPDATE] New version available: {config.VERSION} → {tag}", ui.Colors.GREEN, bold=True)
     try:
         ui.loading_animation(f"Downloading {asset['name']}", 0.5)
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.exe') as tmp_file:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".exe") as tmp_file:
             tmp_path = Path(tmp_file.name)
 
         try:
-            sums = parse_sha256sums(_download_text(sums_asset['browser_download_url']))
-            _download_file(asset['browser_download_url'], tmp_path)
-            _verify_sha256(tmp_path, asset['name'], sums)
+            sums = parse_sha256sums(_download_text(sums_asset["browser_download_url"]))
+            _download_file(asset["browser_download_url"], tmp_path)
+            _verify_sha256(tmp_path, asset["name"], sums)
             _replace_exe(tmp_path)
         finally:
             if tmp_path.exists():
@@ -228,8 +228,9 @@ def auto_update() -> None:
 def _sha256(path: Path) -> str:
     """Return the SHA-256 hex digest of a file."""
     import hashlib
+
     h = hashlib.sha256()
-    with open(path, 'rb') as fh:
-        for chunk in iter(lambda: fh.read(8192), b''):
+    with open(path, "rb") as fh:
+        for chunk in iter(lambda: fh.read(8192), b""):
             h.update(chunk)
     return h.hexdigest()

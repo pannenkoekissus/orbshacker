@@ -1,6 +1,5 @@
 """Tests for bake.py – embedded-config marker round-trip."""
 
-
 from orbshacker.bake import (
     MARKER,
     bake_config,

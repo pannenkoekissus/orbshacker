@@ -24,14 +24,14 @@ class TestFetchJson:
             assert fetch_json("https://example.test/x") == {"a": 1}
 
     def test_request_exception_wrapped_as_network_error(self):
-        with patch("orbshacker.net.requests.get",
-                   side_effect=requests.ConnectionError("boom")):
+        with patch("orbshacker.net.requests.get", side_effect=requests.ConnectionError("boom")):
             with pytest.raises(NetworkError):
                 fetch_json("https://example.test/x")
 
     def test_http_error_wrapped_as_network_error(self):
-        with patch("orbshacker.net.requests.get",
-                   return_value=_mock_response(raise_exc=requests.HTTPError("404"))):
+        with patch(
+            "orbshacker.net.requests.get", return_value=_mock_response(raise_exc=requests.HTTPError("404"))
+        ):
             with pytest.raises(NetworkError):
                 fetch_json("https://example.test/x")
 
@@ -49,6 +49,7 @@ class TestFetchJson:
 
     def test_default_timeout_used_when_omitted(self):
         from orbshacker import config
+
         with patch("orbshacker.net.requests.get", return_value=_mock_response([])) as mock_get:
             fetch_json("https://example.test/x")
         assert mock_get.call_args.kwargs["timeout"] == config.REQUEST_TIMEOUT

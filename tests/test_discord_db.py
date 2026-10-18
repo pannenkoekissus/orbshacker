@@ -92,13 +92,13 @@ class TestFilterWin32Exes:
         assert ">Minecraft.Windows.exe" not in all_exes
 
     def test_sanitizes_symbols_and_illegal_chars(self):
-        games = [{
-            "id": "99",
-            "name": "Special Game™",
-            "executables": [
-                {"os": "win32", "name": "Game™:Special®/Bin/Launch*.exe"}
-            ]
-        }]
+        games = [
+            {
+                "id": "99",
+                "name": "Special Game™",
+                "executables": [{"os": "win32", "name": "Game™:Special®/Bin/Launch*.exe"}],
+            }
+        ]
         db = _make_db_with_games(games)
         exes = db.get_all_executables(games[0])
         assert exes == ["GameSpecial/Bin/Launch.exe"]
@@ -175,12 +175,13 @@ class TestValidateGames:
     def test_filters_entries_without_id_or_name(self):
         from orbshacker.discord_db import _validate_games
 
-        games = _validate_games([
-            {"id": "1", "name": "Good"},
-            {"id": "", "name": "NoId"},
-            {"id": "2"},
-            "not-a-dict",
-            {"id": "3", "name": "AlsoGood"},
-        ])
+        games = _validate_games(
+            [
+                {"id": "1", "name": "Good"},
+                {"id": "", "name": "NoId"},
+                {"id": "2"},
+                "not-a-dict",
+                {"id": "3", "name": "AlsoGood"},
+            ]
+        )
         assert [g["id"] for g in games] == ["1", "3"]
-

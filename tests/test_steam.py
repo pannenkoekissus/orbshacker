@@ -79,6 +79,7 @@ class TestPickWindowsExe:
             },
         }
         from orbshacker.path_utils import sanitize_relative_path
+
         raw_exe = _pick_windows_exe(launch)
         assert sanitize_relative_path(raw_exe) == "Bin/Win64/GameQuest.exe"
 
