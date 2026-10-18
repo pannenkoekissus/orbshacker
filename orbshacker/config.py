@@ -32,6 +32,7 @@ except ImportError:
 DEFAULTS: dict[str, Any] = {
     "CHOSEN_FOLDER": "Desktop",
     "FAKE_EXE_DIR": "Win64",
+    "AUTO_CLOSE": True,
     "AUTO_DELETE_ON_TIMER_END": True,
     "AUTO_DELETE_ON_EXIT": False,
     "TIMER_MINUTES": 15,
@@ -94,6 +95,7 @@ def _coerce_optional_path(value: Any, name: str) -> str | None:
 def _get_default_json_content() -> str:
     content = {
         "CHOSEN_FOLDER": str(Path.home() / "Desktop").replace("\\", "/"),
+        "AUTO_CLOSE": DEFAULTS["AUTO_CLOSE"],
         "AUTO_DELETE_ON_TIMER_END": DEFAULTS["AUTO_DELETE_ON_TIMER_END"],
         "AUTO_DELETE_ON_EXIT": DEFAULTS["AUTO_DELETE_ON_EXIT"],
         "TIMER_MINUTES": DEFAULTS["TIMER_MINUTES"],
@@ -128,6 +130,7 @@ def _load_settings():
 
     try:
         import settings as _user
+
         return _user
     except ImportError:
         return None
@@ -227,14 +230,13 @@ def __getattr__(name: str) -> Any:
 
 # ── GitHub repo ───────────────────────────────────────────────────────────────
 GITHUB_REPO_OWNER = "pannenkoekissus"
-GITHUB_REPO_NAME  = "orbshacker"
-REPO_URL          = f"https://github.com/{GITHUB_REPO_OWNER}/{GITHUB_REPO_NAME}"
+GITHUB_REPO_NAME = "orbshacker"
+REPO_URL = f"https://github.com/{GITHUB_REPO_OWNER}/{GITHUB_REPO_NAME}"
 
 # ── Network endpoints (internal – not in settings.py) ─────────────────────────
 DISCORD_API_URL = "https://discord.com/api/v9/applications/detectable"
 GITHUB_BACKUP_URL = (
-    "https://gist.githubusercontent.com/Cynosphere/"
-    "c1e77f77f0e565ddaac2822977961e76/raw/gameslist.json"
+    "https://gist.githubusercontent.com/Cynosphere/c1e77f77f0e565ddaac2822977961e76/raw/gameslist.json"
 )
 STEAMCMD_API_URL = "https://api.steamcmd.net/v1/info"
 STEAM_STORE_SEARCH_URL = "https://store.steampowered.com/api/storesearch"
@@ -260,6 +262,7 @@ SLEEP_SHORT = 1.0
 SLEEP_LONG = 2.0
 FAKE_EXE_DIR = sanitize_relative_path(_get_validated("FAKE_EXE_DIR"))
 MAX_SEARCH_RESULTS = _get_validated("MAX_SEARCH_RESULTS")
+AUTO_CLOSE = _get_validated("AUTO_CLOSE")
 AUTO_DELETE_ON_TIMER_END = _get_validated("AUTO_DELETE_ON_TIMER_END")
 AUTO_DELETE_ON_EXIT = _get_validated("AUTO_DELETE_ON_EXIT")
 TIMER_MINUTES = _get_validated("TIMER_MINUTES")

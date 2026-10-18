@@ -12,6 +12,9 @@ CHOSEN_FOLDER = Path.home() / "Desktop"
 # ── Subfolder (inside CHOSEN_FOLDER) where faked executables are created ──
 FAKE_EXE_DIR = "Win64"
 
+# ── Automatically close the timer window when the timer ends ──
+AUTO_CLOSE = True
+
 # ── Delete faked files automatically when the countdown timer finishes ──
 AUTO_DELETE_ON_TIMER_END = True
 

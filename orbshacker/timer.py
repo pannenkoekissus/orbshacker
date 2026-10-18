@@ -10,6 +10,7 @@ try/except that fails harmlessly in the inlined form.
 
 import sys
 import time
+import tkinter as tk
 
 try:
     from .bake import has_baked_config, load_baked_config
@@ -24,9 +25,11 @@ TEXT_COLOR = "#e0e0e0"
 SECONDARY_COLOR = "#666666"
 DONE_COLOR = "#ff6b6b"
 DEFAULT_MINUTES = 15
+CLOSE_GRACE_PERIOD_SECONDS = 10
 BAKED_CONFIG_KEYS = (
     "TARGET_EXE",
     "TIMER_MINUTES",
+    "AUTO_CLOSE",
     "AUTO_DELETE_ON_TIMER_END",
     "STEAM_MANIFEST_PATH",
     "CLEANUP_DIRS",
@@ -41,6 +44,7 @@ def resolve_config(minutes=None) -> dict:
     cfg = {
         "TARGET_EXE": None,
         "TIMER_MINUTES": DEFAULT_MINUTES,
+        "AUTO_CLOSE": True,
         "AUTO_DELETE_ON_TIMER_END": True,
         "STEAM_MANIFEST_PATH": None,
         "CLEANUP_DIRS": [],
@@ -52,6 +56,7 @@ def resolve_config(minutes=None) -> dict:
         try:
             from . import config
             cfg["TIMER_MINUTES"] = config.TIMER_MINUTES
+            cfg["AUTO_CLOSE"] = config.AUTO_CLOSE
             cfg["AUTO_DELETE_ON_TIMER_END"] = config.AUTO_DELETE_ON_TIMER_END
             cfg["STEAM_MANIFEST_PATH"] = config.STEAM_MANIFEST_PATH
         except Exception:
@@ -137,50 +142,235 @@ def cleanup_targets(cfg: dict) -> tuple[list, list]:
     dirs = [Path(p) for p in cfg.get("CLEANUP_DIRS", []) if p]
     return files, dirs
 
-
 class TimerApp:
-    def __init__(self, root, minutes=DEFAULT_MINUTES, auto_delete=True,
+    def __init__(self, root, minutes=DEFAULT_MINUTES, auto_close=True, auto_delete=True,
                  cleanup_files=None, cleanup_dirs=None):
         self.root = root
         self.auto_delete = bool(auto_delete)
         self.cleanup_files = list(cleanup_files or [])
         self.cleanup_dirs = list(cleanup_dirs or [])
+
         root.title(WINDOW_TITLE)
         root.geometry(WINDOW_SIZE)
         root.resizable(False, False)
         root.configure(bg=BG_COLOR)
+
         self.remaining = int(minutes) * 60
         self._deadline = time.monotonic() + self.remaining
-        from tkinter import Label
-        self.label = Label(root, text=f"{int(minutes):02d}:00", font=("Consolas", 56, "bold"),
-                           fg=TEXT_COLOR, bg=BG_COLOR)
+        self.closing = False
+        self.auto_close = bool(auto_close)
+
+        self.auto_close_toggle = tk.Checkbutton(
+            root,
+            text="Close when timer ends",
+            variable=self.auto_close,
+            command=self.toggle_auto_close,
+            font=("Segoe UI", 10),
+            fg=TEXT_COLOR,
+            bg=BG_COLOR,
+            activeforeground=TEXT_COLOR,
+            activebackground=BG_COLOR,
+            cursor="hand2",
+            selectcolor=BG_COLOR,
+            bd=1,
+        )
+        self.auto_close_toggle.pack(pady=(15, 0))
+
+        # --- Main timer label ---
+        self.label = tk.Label(
+            root,
+            text=f"{int(minutes):02d}:00",
+            font=("Consolas", 56, "bold"),
+            fg=TEXT_COLOR,
+            bg=BG_COLOR,
+        )
         self.label.pack(expand=True)
-        self.status = Label(root, text="Running", font=("Segoe UI", 10),
-                           fg=SECONDARY_COLOR, bg=BG_COLOR)
+
+        # --- Time adjustment controls (ported from TimerApp.txt) ---
+        self.time_adjust_label = tk.Label(
+            root,
+            text="Add or reduce time",
+            font=("Segoe UI", 9),
+            fg=SECONDARY_COLOR,
+            bg=BG_COLOR,
+        )
+        self.time_adjust_label.pack()
+
+        self.time_adjust_frame = tk.Frame(root, bg=BG_COLOR)
+        self.time_adjust_frame.pack(pady=(2, 10))
+
+        self.minus_button = tk.Button(
+            self.time_adjust_frame,
+            text="-",
+            command=lambda: self.adjust_time(-30),
+            font=("Segoe UI", 18, "bold"),
+            fg=TEXT_COLOR,
+            bg=BG_COLOR,
+            activeforeground=TEXT_COLOR,
+            activebackground=BG_COLOR,
+            cursor="hand2",
+            width=2,
+            height=1,
+            padx=0,
+            pady=0,
+            relief="flat",
+            bd=0,
+            highlightthickness=0,
+        )
+        self.minus_button.pack(side="left")
+
+        self.time_adjust_label_value = tk.Label(
+            self.time_adjust_frame,
+            text="30s",
+            font=("Segoe UI", 10),
+            fg=TEXT_COLOR,
+            bg=BG_COLOR,
+            padx=8,
+        )
+        self.time_adjust_label_value.pack(side="left")
+
+        self.plus_button = tk.Button(
+            self.time_adjust_frame,
+            text="+",
+            command=lambda: self.adjust_time(30),
+            font=("Segoe UI", 14, "bold"),
+            fg=TEXT_COLOR,
+            bg=BG_COLOR,
+            activeforeground=TEXT_COLOR,
+            activebackground=BG_COLOR,
+            cursor="hand2",
+            width=2,
+            height=1,
+            padx=0,
+            pady=0,
+            relief="flat",
+            bd=0,
+            highlightthickness=0,
+        )
+        self.plus_button.pack(side="left")
+
+        # --- Status label ---
+        self.status = tk.Label(
+            root,
+            text="Running",
+            font=("Segoe UI", 10),
+            fg=SECONDARY_COLOR,
+            bg=BG_COLOR,
+        )
         self.status.pack(side="bottom", pady=20)
+
+        self.update_time_adjust_buttons()
         self._tick()
 
+    # ------------------------------------------------------------------
+    # Tick loop — deadline based (from the second class)
+    # ------------------------------------------------------------------
     def _tick(self):
+        if self.closing:
+            return  # close countdown owns the label now
+
         remaining = int(round(self._deadline - time.monotonic()))
         if remaining < 0:
             remaining = 0
+        self.remaining = remaining
+
         m, s = divmod(remaining, 60)
         self.label.config(text=f"{m:02d}:{s:02d}")
+
         if remaining > 0:
+            self.update_time_adjust_buttons()
             self.label.after(250, self._tick)
         else:
             self.label.config(text="00:00", fg=DONE_COLOR)
             self.status.config(text="Complete", fg=DONE_COLOR)
+            self.update_time_adjust_buttons()
             self.root.update()
+
+            # Mirrors the ordering in TimerApp.txt:
+            # self-destruct takes priority, then auto-close, else idle at 00:00
             if self.auto_delete:
                 self.trigger_self_destruction()
+            elif self.auto_close:
+                self.start_close_countdown()
+            else:
+                self.label.config(text="00:00", fg=DONE_COLOR)
 
-    def trigger_self_destruction(self):
+    # ------------------------------------------------------------------
+    # Auto-close
+    # ------------------------------------------------------------------
+    def toggle_auto_close(self) -> None:
+        if self.auto_close and self.remaining <= 0:
+            if self.auto_delete:
+                return
+            self.start_close_countdown()
+
+    # ------------------------------------------------------------------
+    # Time adjustment
+    # ------------------------------------------------------------------
+    def adjust_time(self, seconds: int) -> None:
+        if self.closing:
+            return
+
+        new_remaining = max(0, self.remaining + seconds)
+        self.remaining = new_remaining
+        # Rebase the deadline so the monotonic-based tick reflects the change.
+        self._deadline = time.monotonic() + new_remaining
+
+        m, s = divmod(new_remaining, 60)
+        self.label.config(text=f"{m:02d}:{s:02d}", fg=TEXT_COLOR)
+        if new_remaining > 0:
+            self.status.config(text="Running", fg=SECONDARY_COLOR)
+
+        self.update_time_adjust_buttons()
+
+    def update_time_adjust_buttons(self) -> None:
+        if self.closing:
+            self.minus_button.config(state="disabled")
+            self.plus_button.config(state="disabled")
+            return
+
+        minus_state = "disabled" if self.remaining <= 30 else "normal"
+        plus_state = "disabled" if self.remaining <= 0 else "normal"
+
+        self.minus_button.config(state=minus_state)
+        self.plus_button.config(state=plus_state)
+
+    # ------------------------------------------------------------------
+    # Close countdown (ported from TimerApp.txt)
+    # ------------------------------------------------------------------
+    def start_close_countdown(self) -> None:
+        if self.closing:
+            return
+
+        self.closing = True
+        self.auto_close_toggle.config(state="disabled")
+        self.minus_button.config(state="disabled")
+        self.plus_button.config(state="disabled")
+        self.label.config(font=("Consolas", 32, "bold"))
+        self._close_countdown(CLOSE_GRACE_PERIOD_SECONDS)
+
+    def _close_countdown(self, remaining: int) -> None:
+        if remaining <= 0:
+            self.root.destroy()
+            sys.exit(0)
+
+        self.label.config(
+            text=f"Closing in {remaining}",
+            fg=DONE_COLOR,
+        )
+
+        self.root.after(
+            1000,
+            lambda: self._close_countdown(remaining - 1),
+        )
+
+    # ------------------------------------------------------------------
+    # Self-destruction (uses the injected cleanup lists + helper)
+    # ------------------------------------------------------------------
+    def trigger_self_destruction(self) -> None:
         spawn_self_destruct(self.cleanup_files, self.cleanup_dirs)
         self.root.destroy()
         sys.exit(0)
-
-
 def _setup_tk_environment(tk_support_dirs) -> None:
     """Point TCL_LIBRARY/TK_LIBRARY at the real install so tkinter works from anywhere."""
     import os

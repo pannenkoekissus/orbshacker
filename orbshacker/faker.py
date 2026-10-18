@@ -134,6 +134,7 @@ class GameFaker:
         return {
             "TARGET_EXE": str(target_exe).replace("\\", "/") if target_exe else None,
             "TIMER_MINUTES": config.TIMER_MINUTES,
+            "AUTO_CLOSE": config.AUTO_CLOSE,
             "AUTO_DELETE_ON_TIMER_END": config.AUTO_DELETE_ON_TIMER_END,
             "STEAM_MANIFEST_PATH": str(manifest_path).replace("\\", "/") if manifest_path else None,
             "CLEANUP_DIRS": [str(d).replace("\\", "/") for d in cleanup_dirs],
