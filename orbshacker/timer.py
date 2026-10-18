@@ -11,6 +11,7 @@ try/except that fails harmlessly in the inlined form.
 import sys
 import time
 import tkinter as tk
+from pathlib import Path
 
 try:
     from .bake import has_baked_config, load_baked_config
@@ -395,6 +396,7 @@ def run_timer(minutes=None) -> None:
     debug(f"args: {sys.argv}")
     files, dirs = cleanup_targets(cfg)
     root = tk.Tk()
+    root.iconbitmap(resource_path("orbshacker.ico"))
     title = sys.argv[1] if len(sys.argv) > 1 else "Timer (Failed to get title)"
     TimerApp(
         root,
@@ -406,6 +408,11 @@ def run_timer(minutes=None) -> None:
         title=title
     )
     root.mainloop()
+
+def resource_path(name: str) -> Path:
+    if getattr(sys, "frozen", False):
+        return Path(sys._MEIPASS) / name
+    return Path(__file__).parent / name
 
 def debug(text):
     import time
