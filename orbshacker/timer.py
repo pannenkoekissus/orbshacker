@@ -169,7 +169,7 @@ class TimerApp:
         self.remaining = int(minutes) * 60
         self._deadline = time.monotonic() + self.remaining
         self.closing = False
-        self.auto_close = tk.BooleanVar(value=bool(auto_close))
+        self.auto_close = tk.BooleanVar(master=root, value=bool(auto_close))
 
         self.auto_close_toggle = tk.Checkbutton(
             root,

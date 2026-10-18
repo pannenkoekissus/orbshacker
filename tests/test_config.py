@@ -12,6 +12,7 @@ from orbshacker.bake import bake_config
 from orbshacker.config import _coerce_bool, _coerce_int, _load_settings, ensure_user_settings
 from orbshacker.errors import FileConflictError
 from orbshacker.faker import GameFaker, build_timer_script, timer_script_for
+from orbshacker.timer import WINDOW_TITLE
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -231,7 +232,7 @@ class TestFaker:
 
                 mock_popen.assert_called_once()
                 called_args = mock_popen.call_args[1].get("args", mock_popen.call_args[0][0])
-                assert called_args == [str(Path("C:/Dummy/Game.exe"))]
+                assert called_args == [str(Path("C:/Dummy/Game.exe")), WINDOW_TITLE]
 
     def test_multi_game_scripts_are_independent(self, tmp_path):
         with patch("orbshacker.config.TIMER_MINUTES", 11), patch("orbshacker.config.CHOSEN_FOLDER", tmp_path):
