@@ -17,7 +17,12 @@ from orbshacker import _version as _build_version
 
 
 def get_git_version() -> str:
-    """Retrieve the latest tag from Git, falling back to '0.0.0'."""
+    """Retrieve the local version from _version.py if available, otherwise try to get the latest git tag."""
+
+    ver = getattr(_build_version, "VERSION", None)
+    if ver:
+        return ver
+
     try:
         res = subprocess.run(
             ["git", "describe", "--tags", "--abbrev=0", "--match", "v*"],
