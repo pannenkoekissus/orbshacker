@@ -144,13 +144,13 @@ def cleanup_targets(cfg: dict) -> tuple[list, list]:
 
 class TimerApp:
     def __init__(self, root, minutes=DEFAULT_MINUTES, auto_close=True, auto_delete=True,
-                 cleanup_files=None, cleanup_dirs=None):
+                 cleanup_files=None, cleanup_dirs=None, title: str = WINDOW_TITLE):
         self.root = root
         self.auto_delete = bool(auto_delete)
         self.cleanup_files = list(cleanup_files or [])
         self.cleanup_dirs = list(cleanup_dirs or [])
 
-        root.title(WINDOW_TITLE)
+        root.title(title)
         root.geometry(WINDOW_SIZE)
         root.resizable(False, False)
         root.configure(bg=BG_COLOR)
@@ -158,7 +158,7 @@ class TimerApp:
         self.remaining = int(minutes) * 60
         self._deadline = time.monotonic() + self.remaining
         self.closing = False
-        self.auto_close = bool(auto_close)
+        self.auto_close = tk.BooleanVar(value=bool(auto_close))
 
         self.auto_close_toggle = tk.Checkbutton(
             root,
@@ -290,7 +290,7 @@ class TimerApp:
             # self-destruct takes priority, then auto-close, else idle at 00:00
             if self.auto_delete:
                 self.trigger_self_destruction()
-            elif self.auto_close:
+            elif self.auto_close.get():
                 self.start_close_countdown()
             else:
                 self.label.config(text="00:00", fg=DONE_COLOR)
@@ -299,7 +299,7 @@ class TimerApp:
     # Auto-close
     # ------------------------------------------------------------------
     def toggle_auto_close(self) -> None:
-        if self.auto_close and self.remaining <= 0:
+        if self.auto_close.get() and self.remaining <= 0:
             if self.auto_delete:
                 return
             self.start_close_countdown()
@@ -371,6 +371,8 @@ class TimerApp:
         spawn_self_destruct(self.cleanup_files, self.cleanup_dirs)
         self.root.destroy()
         sys.exit(0)
+
+
 def _setup_tk_environment(tk_support_dirs) -> None:
     """Point TCL_LIBRARY/TK_LIBRARY at the real install so tkinter works from anywhere."""
     import os
@@ -389,17 +391,30 @@ def run_timer(minutes=None) -> None:
     _setup_tk_environment(cfg.get("TK_SUPPORT_DIRS"))
     import tkinter as tk
 
+    debug(f"Timer started with config: {cfg}")
+    debug(f"args: {sys.argv}")
     files, dirs = cleanup_targets(cfg)
     root = tk.Tk()
+    title = sys.argv[1] if len(sys.argv) > 1 else "Timer (Failed to get title)"
     TimerApp(
         root,
         minutes=cfg["TIMER_MINUTES"],
+        auto_close=cfg["AUTO_CLOSE"],
         auto_delete=cfg["AUTO_DELETE_ON_TIMER_END"],
         cleanup_files=files,
         cleanup_dirs=dirs,
+        title=title
     )
     root.mainloop()
 
+def debug(text):
+    import time
+    from pathlib import Path
+    try:
+        with open(Path(__file__).resolve().parent / "debug.txt", "a", encoding="utf-8") as f:
+            f.write(f"[{time.strftime('%H:%M:%S')}] {text}\n")
+    except OSError:
+        pass
 
 if __name__ == "__main__":
     run_timer()

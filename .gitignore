@@ -142,3 +142,4 @@ Win64/
 settings.py
 settings.json
 orbshacker/_version.py
+debug.txt

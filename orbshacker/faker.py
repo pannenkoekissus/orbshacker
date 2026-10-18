@@ -15,6 +15,7 @@ from pathlib import Path
 
 from . import config
 from .bake import MARKER, bake_config, has_baked_config
+from .debug import debug
 from .errors import FileConflictError
 from .path_utils import sanitize_relative_path
 from .ui import (
@@ -248,17 +249,17 @@ class GameFaker:
             print_color("[!] Check file permissions or disk space", Colors.YELLOW)
             return None
 
-    def launch_executable(self, exe_path: Path) -> bool:
+    def launch_executable(self, exe_path: Path, title: str = "Timer") -> bool:
         """Launch the fake game process in background."""
         try:
             loading_animation("Launching process", 0.5)
 
             if self._frozen:
-                args = [str(exe_path)]
+                args = [str(exe_path), title]
                 env = None
             else:
                 timer_script = timer_script_for(exe_path)
-                args = [str(exe_path), str(timer_script)]
+                args = [str(exe_path), str(timer_script), title]
                 env = os.environ.copy()
                 base_prefix = Path(sys.base_prefix)
                 env["PYTHONHOME"] = str(base_prefix)
@@ -266,6 +267,7 @@ class GameFaker:
                 path_parts = [str(base_prefix), env.get("PATH", "")]
                 env["PATH"] = os.pathsep.join(part for part in path_parts if part)
 
+            debug(f"args: {args}")
             if sys.platform == 'win32':
                 DETACHED_PROCESS = 0x00000008
                 proc = subprocess.Popen(
