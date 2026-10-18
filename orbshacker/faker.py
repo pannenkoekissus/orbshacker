@@ -5,6 +5,7 @@ In frozen (.exe) mode:  copies orbshacker.exe itself -> GameName.exe (config bak
 In source mode:         copies pythonw.exe -> GameName.exe + _<stem>_orbshacker_timer.pyw
 """
 
+import ctypes
 import json
 import os
 import shutil
@@ -15,7 +16,8 @@ from pathlib import Path
 
 from . import config
 from .bake import MARKER, bake_config, has_baked_config
-from .debug import debug
+
+# from .debug import debug
 from .errors import FileConflictError
 from .path_utils import sanitize_relative_path
 from .ui import (
@@ -26,6 +28,13 @@ from .ui import (
     print_boxed_title,
     print_color,
 )
+
+kernel32 = ctypes.windll.kernel32
+handle = kernel32.GetStdHandle(-10)  # STD_INPUT_HANDLE
+mode = ctypes.c_uint32()
+kernel32.GetConsoleMode(handle, ctypes.byref(mode))
+# Clear ENABLE_QUICK_EDIT_MODE (0x0040), set ENABLE_EXTENDED_FLAGS (0x0080)
+kernel32.SetConsoleMode(handle, (mode.value & ~0x0040) | 0x0080)
 
 _SOURCES_FOR_INLINE = ("bake.py", "janitor.py", "timer.py")
 
@@ -268,7 +277,7 @@ class GameFaker:
                 path_parts = [str(base_prefix), env.get("PATH", "")]
                 env["PATH"] = os.pathsep.join(part for part in path_parts if part)
 
-            debug(f"args: {args}")
+            # debug(f"args: {args}")
             if sys.platform == "win32":
                 DETACHED_PROCESS = 0x00000008
                 proc = subprocess.Popen(

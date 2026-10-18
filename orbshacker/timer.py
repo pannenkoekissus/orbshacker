@@ -402,8 +402,8 @@ def run_timer(minutes=None) -> None:
     _setup_tk_environment(cfg.get("TK_SUPPORT_DIRS"))
     import tkinter as tk
 
-    debug(f"Timer started with config: {cfg}")
-    debug(f"args: {sys.argv}")
+    # debug(f"Timer started with config: {cfg}")
+    # debug(f"args: {sys.argv}")
     files, dirs = cleanup_targets(cfg)
     root = tk.Tk()
     root.iconbitmap(resource_path("orbshacker.ico"))
