@@ -299,9 +299,7 @@ class TimerApp:
 
             # Mirrors the ordering in TimerApp.txt:
             # self-destruct takes priority, then auto-close, else idle at 00:00
-            if self.auto_delete:
-                self.trigger_self_destruction()
-            elif self.auto_close.get():
+            if self.auto_delete or self.auto_close.get():
                 self.start_close_countdown()
             else:
                 self.label.config(text="00:00", fg=DONE_COLOR)
@@ -362,7 +360,10 @@ class TimerApp:
 
     def _close_countdown(self, remaining: int) -> None:
         if remaining <= 0:
-            self.root.destroy()
+            if self.auto_delete:
+                self.trigger_self_destruction()
+            else:
+                self.root.destroy()
             sys.exit(0)
 
         self.label.config(
