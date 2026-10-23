@@ -407,7 +407,10 @@ def run_timer(minutes=None) -> None:
     # debug(f"args: {sys.argv}")
     files, dirs = cleanup_targets(cfg)
     root = tk.Tk()
-    root.iconbitmap(resource_path("orbshacker.ico"))
+    try:
+        root.iconbitmap(resource_path("orbshacker.ico"))
+    except (tk.TclError, TypeError):
+        pass
     title = sys.argv[1] if len(sys.argv) > 1 else "Timer (Failed to get title)"
     TimerApp(
         root,

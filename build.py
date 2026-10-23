@@ -64,15 +64,18 @@ def main():
         pyinstaller_cmd = [sys.executable, "-m", "PyInstaller"]
 
     # 4. Build command line
+    icon_args = []
+    if Path("orbshacker.ico").exists():
+        icon_args = ["--icon", "orbshacker.ico", "--add-data", "orbshacker.ico;."]
+    else:
+        print("[*] orbshacker.ico not found, building without an icon")
+
     cmd = pyinstaller_cmd + [
         "--onefile",
         "--name",
         "orbshacker",
         "--noconsole",
-        "--icon",
-        "orbshacker.ico",
-        "--add-data",
-        "orbshacker.ico;.",
+        *icon_args,
         "--add-data",
         "settings.py;.",
         "--collect-all",
