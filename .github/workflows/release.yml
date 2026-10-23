@@ -73,7 +73,7 @@ jobs:
         if: steps.tag.outputs.valid == 'true'
         run: |
           copy settings.example.py settings.py
-          pyinstaller --onefile --name orbshacker --noconsole --add-data "settings.py;." --collect-all orbshacker orbshacker.py
+          pyinstaller --onefile --name orbshacker --noconsole --icon orbshacker.ico --add-data "orbshacker.ico;." --add-data "settings.py;." --collect-all orbshacker orbshacker.py
 
       - name: Generate SHA256SUMS
         if: steps.tag.outputs.valid == 'true'
