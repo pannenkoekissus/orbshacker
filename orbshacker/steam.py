@@ -220,6 +220,23 @@ _STAGED_DEPOT_TEMPLATE = """
 \t\t\t"dlcappid"\t\t"0"
 \t\t}}"""
 
+_FC27_APPID = 4080220
+
+_FC27_ACF_TEMPLATE = """"AppState"
+{{
+    "appid"     "{appid}"
+    "name"      "EA SPORTS FC™ 27"
+    "StateFlags"        "4"
+    "installdir"        "EA SPORTS FC 27"
+}}
+"""
+
+_FC27_MANIFEST_FINGERPRINT = (
+    '"appid"     "4080220"',
+    '"StateFlags"        "4"',
+    '"installdir"        "EA SPORTS FC 27"',
+)
+
 _OUR_MANIFEST_FINGERPRINT = (
     '"StagingSize"\t\t"1073741824"',
     '"BytesDownloaded"\t\t"27262976"',
@@ -237,7 +254,9 @@ def is_our_manifest(path: Path) -> bool:
         text = Path(path).read_text(encoding="utf-8", errors="ignore")
     except Exception:
         return False
-    return all(fingerprint in text for fingerprint in _OUR_MANIFEST_FINGERPRINT)
+    return all(fingerprint in text for fingerprint in _OUR_MANIFEST_FINGERPRINT) or all(
+        fingerprint in text for fingerprint in _FC27_MANIFEST_FINGERPRINT
+    )
 
 
 def generate_appmanifest(
@@ -263,14 +282,17 @@ def generate_appmanifest(
         )
         return None
 
-    acf_content = _ACF_TEMPLATE.format(
-        appid=appid,
-        launcher=_acf_escape(steam_path / "steam.exe"),
-        name=_acf_escape(name),
-        installdir=_acf_escape(installdir),
-        owner=owner if owner is not None else get_steam_user_id(),
-        staged=_STAGED_DEPOT_TEMPLATE.format(depot_id=depot_id) if depot_id else "",
-    )
+    if appid == _FC27_APPID:
+        acf_content = _FC27_ACF_TEMPLATE.format(appid=appid)
+    else:
+        acf_content = _ACF_TEMPLATE.format(
+            appid=appid,
+            launcher=_acf_escape(steam_path / "steam.exe"),
+            name=_acf_escape(name),
+            installdir=_acf_escape(installdir),
+            owner=owner if owner is not None else get_steam_user_id(),
+            staged=_STAGED_DEPOT_TEMPLATE.format(depot_id=depot_id) if depot_id else "",
+        )
     try:
         acf_path.parent.mkdir(parents=True, exist_ok=True)
         with open(acf_path, "w", encoding="utf-8") as f:

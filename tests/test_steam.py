@@ -159,6 +159,24 @@ class TestGenerateAppmanifest:
         p.write_text('"StateFlags"\t\t"4"', encoding="utf-8")
         assert not is_our_manifest(p)
 
+    def test_fc27_writes_minimal_manifest(self, tmp_path):
+        acf = generate_appmanifest(
+            4080220, "EA SPORTS FC 27", "EA SPORTS FC 27", tmp_path, depot_id="228989", owner="0"
+        )
+        assert acf is not None and acf.exists()
+        text = acf.read_text(encoding="utf-8")
+        assert '"appid"     "4080220"' in text
+        assert '"name"      "EA SPORTS FC™ 27"' in text
+        assert '"StateFlags"        "4"' in text
+        assert '"installdir"        "EA SPORTS FC 27"' in text
+        assert '"StagingSize"' not in text
+        assert is_our_manifest(acf)
+
+    def test_fc27_minimal_manifest_can_be_regenerated(self, tmp_path):
+        first = generate_appmanifest(4080220, "EA SPORTS FC 27", "EA SPORTS FC 27", tmp_path, owner="0")
+        second = generate_appmanifest(4080220, "EA SPORTS FC 27", "EA SPORTS FC 27", tmp_path, owner="0")
+        assert first == second
+
 
 class TestCreateSteamFake:
     def _fake_faker(self, tmp_path):
